@@ -85,6 +85,12 @@ nav a:first-of-type {
 </style> -->
 
 
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+</style>
 <template>
     <div>
         <table style="width: 100%;">
