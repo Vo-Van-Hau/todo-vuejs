@@ -86,14 +86,38 @@ nav a:first-of-type {
 
 
 <template>
-    <h1>Make me dynamic! {{ message }}</h1>
+    <div>
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A</td>
+                    <td>B</td>
+                    <td>C</td>
+                    <td>D</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </template>
 
 <script>
 export default  {
     data() {
         return {
-            message: 'Hello World!'
+            message: 'Hello World!',
+            count: 0,
+            changeCount: () => {
+                this.count++;
+            },
+            dynamicId: 'koh'
         }
     }
 }
