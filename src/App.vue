@@ -1,6 +1,4 @@
-<style lang="scss">
-
-</style>
+<style lang="scss"></style>
 
 <template>
     <TaskItem contentIntroduce='Hi I am the child component' />
@@ -29,40 +27,31 @@
                                 <td>{{ id }}</td>
                                 <td>{{ title }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-light me-2">
-                                        <img src="./assets/images/v1/icons/edit.png" width="24" height="24"/>
+                                    <button type="button" class="btn btn-light me-2" @click='(event) => editTask(event)' data-id="e-{{ id }}">
+                                        <img src="./assets/images/v1/icons/edit.png" width="24" height="24" />
                                     </button>
-                                    <button type="button" class="btn btn-light">
-                                        <img src="./assets/images/v1/icons/delete.png" width="24" height="24"/>
+                                    <button type="button" class="btn btn-light" @click='(event) => deleteTask(event)' data-id="d-{{ id }}">
+                                        <img src="./assets/images/v1/icons/delete.png" width="24" height="24" />
                                     </button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-        </div>
+            </div>
         </div>
     </div>
 </template>
 
 
-
 <script type="text/javascript">
 
-import TaskItem from './components/TaskItem.vue'
+import TaskItem from './components/TaskItem.vue';
 
 export default {
     data() {
         return {
-            tasks: [
-                {
-                    id: 1,
-                    title: 'Learning English',
-                    status: '',
-                    created_at: '',
-                    isComplete: false,
-                }
-            ],
+            tasks: [],
             task: {
                 title: '',
             },
@@ -76,13 +65,35 @@ export default {
     methods: {
         createTask(event) {
             let newTasks = this.tasks;
-            newTasks.push( {
+            newTasks.push({
                 title: this.task.title,
                 status: '',
                 created_at: '',
                 isComplete: false,
             });
             this.tasks = newTasks;
+            this.storeTasksInDB(newTasks);
+        },
+        editTask(event) {
+            console.log('editing');
+        },
+        deleteTask(event) {
+            console.log(event);
+        },
+        storeTasksInDB(tasks) {
+            if(tasks) {
+                window.localStorage.setItem('tasks', JSON.stringify(tasks));
+                return true;
+            } else {
+                return false;
+            }
+        },
+        getTasksFromDB() {
+            let existTasks = window.localStorage.getItem('tasks');
+            if(existTasks) {
+                return JSON.parse(existTasks);
+            }
+            return [];
         },
         async getAnswer() {
             this.answer = 'Thinking...'
@@ -103,8 +114,9 @@ export default {
             }
         }
     },
-    mounted() { 
-        console.log(`the component is now mounted.`);
+    mounted() {
+        let existTasks = this.getTasksFromDB();
+        this.tasks = existTasks;
     }
 }
 </script>
