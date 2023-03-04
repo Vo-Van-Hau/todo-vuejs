@@ -1,16 +1,19 @@
 <style lang="scss"></style>
 
 <template>
-    <TaskItem contentIntroduce='Hi I am the child component' />
+    <!-- <TaskItem contentIntroduce='Hi I am the child component' /> -->
     <div class="container">
         <div class="py-5">
+            <div>
+                <h3>Todos - VueJS 3.0</h3>
+            </div>
             <div class="row align-items-start">
                 <div class="col-4">
                     <form>
                         <div class="mb-3">
                             <input type="text" class="form-control" v-model='task.title'>
                         </div>
-                        <button type="button" class="btn btn-primary" @click='(event) => createTask(event)'>CREATE</button>
+                        <button type="button" class="btn btn-primary" @click='(event) => updateOrCreate(event)'>{{ !isUpdating ? 'CREATE' : 'UPDATE' }}</button>
                     </form>
                 </div>
                 <div class="col-8">
@@ -27,10 +30,10 @@
                                 <td>{{ id }}</td>
                                 <td>{{ title }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-light me-2" @click='(event) => editTask(event)' data-id="e-{{ id }}">
+                                    <button type="button" class="btn btn-light me-2" @click='(event) => renderEditTask(event)' v-bind:data-index="index">
                                         <img src="./assets/images/v1/icons/edit.png" width="24" height="24" />
                                     </button>
-                                    <button type="button" class="btn btn-light" @click='(event) => deleteTask(event)' data-id="d-{{ id }}">
+                                    <button type="button" class="btn btn-light" @click='(event) => deleteTask(event)' v-bind:data-index="index">
                                         <img src="./assets/images/v1/icons/delete.png" width="24" height="24" />
                                     </button>
                                 </td>
@@ -55,6 +58,7 @@ export default {
             task: {
                 title: '',
             },
+            isUpdating: false,
             question: '',
             answer: 'Questions usually contain a question mark. ;-)'
         }
@@ -63,22 +67,60 @@ export default {
         TaskItem
     },
     methods: {
-        createTask(event) {
-            let newTasks = this.tasks;
-            newTasks.push({
-                title: this.task.title,
-                status: '',
-                created_at: '',
-                isComplete: false,
-            });
-            this.tasks = newTasks;
-            this.storeTasksInDB(newTasks);
+        updateOrCreate(event) {
+            if(!this.isUpdating) {
+                let newTasks = this.tasks;
+                newTasks.push({
+                    id: Math.random().toString(36).substring(2, 7),
+                    title: this.task.title,
+                    status: '',
+                    created_at: '',
+                    isComplete: false,
+                });
+                try {
+                    this.tasks = newTasks;
+                    this.storeTasksInDB(newTasks);
+                    this.resetTask();
+                } catch (errors) {}
+            } else {
+                this.editTask();
+            }
         },
-        editTask(event) {
-            console.log('editing');
+        editTask() {
+            if(this.task) {
+                let task_id = this.task.id;
+                let existTasks = this.getTasksFromDB();
+                let i = existTasks.find((item, index) => {
+                    return item.id === task_id;
+                }); 
+                existTasks.splice(i, 1, this.task);
+                this.tasks = existTasks;
+                try {
+                    this.storeTasksInDB(existTasks);
+                    this.resetTask();
+                    this.isUpdating = false;
+                } catch (errors) {}
+            }
+        },
+        renderEditTask() {
+            let i = event.currentTarget.getAttribute('data-index');
+            let existTasks = this.getTasksFromDB();
+            if(existTasks) {
+                let task = existTasks[i];
+                if(task) {
+                    this.task = task;
+                    this.isUpdating = true;
+                }
+            }
         },
         deleteTask(event) {
-            console.log(event);
+            let i = event.currentTarget.getAttribute('data-index');
+            let existTasks = this.getTasksFromDB();
+            existTasks.splice(i, 1);
+            try {
+                this.tasks = existTasks;
+                this.storeTasksInDB(existTasks);
+            } catch (errors) {}
         },
         storeTasksInDB(tasks) {
             if(tasks) {
@@ -94,6 +136,15 @@ export default {
                 return JSON.parse(existTasks);
             }
             return [];
+        },
+        resetTask() {
+            this.task = {
+                id: '',
+                title: '',
+                status: '', 
+                created_at: '',
+                isComplete: false,
+            }
         },
         async getAnswer() {
             this.answer = 'Thinking...'
